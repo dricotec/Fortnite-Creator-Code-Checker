@@ -1,23 +1,80 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FN Creator Code Checker - Verify Fortnite Support-A-Creator Codes</title>
-    <meta name="description" content="Instantly check if a Fortnite Support-A-Creator code exists. Verify creator codes and get detailed information about Fortnite content creators." />
-    <meta name="keywords" content="Fortnite, creator code, support a creator, SAC code, Epic Games, check creator code" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <meta property="og:title" content="FN Creator Code Checker" />
-    <meta property="og:description" content="Verify Fortnite Support-A-Creator codes instantly" />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta property="og:image" content="https://static0.polygonimages.com/wordpress/wp-content/uploads/2025/11/fnbr-chapter-seven-pacific-break-key-art.jpg?w=1600&h=900&fit=crop" />
-    <meta name="twitter:image" content="https://static0.polygonimages.com/wordpress/wp-content/uploads/2025/11/fnbr-chapter-seven-pacific-break-key-art.jpg?w=1600&h=900&fit=crop" />
-    <link rel="image_src" href="https://static0.polygonimages.com/wordpress/wp-content/uploads/2025/11/fnbr-chapter-seven-pacific-break-key-art.jpg?w=1600&h=900&fit=crop" />
-    <script type="module" crossorigin src="/assets/index-D9yEbztW.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Dh3cCo0I.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FN Code Checker — Static</title>
+  <meta name="description" content="Static version of FN Creator Code Checker">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container logo">
+      <div class="icon">🎮</div>
+      <div class="title">FN Code Checker</div>
+    </div>
+  </header>
+
+  <main class="main container">
+    <div class="card">
+      <div class="hero">
+        <div class="badge">Powered by Fortnite API</div>
+        <h1>Check Creator Codes</h1>
+        <p>Instantly verify if a Fortnite Support-A-Creator code exists and get detailed creator information.</p>
+      </div>
+
+      <div>
+        <div class="search-row">
+          <input id="codeInput" class="input" placeholder="Enter creator code..." />
+          <button id="searchBtn" class="btn">Search</button>
+        </div>
+
+        <div id="result" class="result" aria-live="polite"></div>
+
+        <div id="hint" class="small" style="text-align:center;margin-top:12px;color:var(--muted)">Try searching for popular codes like "ninja" or "tfue"</div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    Not affiliated with Epic Games. Data provided by <a href="https://fortnite-api.com" target="_blank" rel="noopener noreferrer">fortnite-api.com</a>
+  </footer>
+
+  <script>
+    const input = document.getElementById('codeInput');
+    const btn = document.getElementById('searchBtn');
+    const resultEl = document.getElementById('result');
+    const hintEl = document.getElementById('hint');
+
+    async function checkCode(){
+      const code = input.value.trim();
+      if(!code) return;
+      resultEl.innerHTML = 'Searching...';
+      hintEl.style.display = 'none';
+      btn.disabled = true;
+      try{
+        const res = await fetch(`https://fortnite-api.com/v2/creatorcode?name=${encodeURIComponent(code)}`);
+        const data = await res.json();
+        if(data.status === 200 && data.data){
+          const d = data.data;
+          resultEl.innerHTML = `\n            <div class="success">\n              <strong>Code Found!</strong>\n              <div style="margin-top:10px">\n                <div class="small">Creator Name</div>\n                <div style="font-size:20px;font-weight:700">${escapeHtml(d.account.name)}</div>\n                ${d.verified ? '<div style="margin-top:8px;color:var(--success);font-weight:700">Verified</div>' : ''}\n                <div class="info-grid">\n                  <div>\n                    <div class="small">Creator Code</div>\n                    <div style="font-weight:700">${escapeHtml(d.code)}</div>\n                  </div>\n                  <div>\n                    <div class="small">Status</div>\n                    <div style="color:var(--success);font-weight:700">${escapeHtml(d.status)}</div>\n                  </div>\n                </div>\n                <div style="margin-top:8px">\n                  <div class="small">Account ID</div>\n                  <div style="font-family:monospace;color:var(--muted)">${escapeHtml(d.account.id)}</div>\n                </div>\n              </div>\n            </div>`;
+        } else {
+          resultEl.innerHTML = `\n            <div class="notfound">\n              <strong>Code Not Found</strong>\n              <p style="margin-top:8px">The creator code "<span style=\"font-weight:700;color:var(--fg)\">${escapeHtml(code)}</span>" doesn't exist yet.</p>\n              <div style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.02);padding-top:8px;color:var(--muted)">\n                <strong style="color:var(--success)">This code could be available!</strong>\n                <div>If you're a content creator, you might be able to claim "<span style=\"font-weight:700;color:var(--fg)\">${escapeHtml(code)}</span>" as your Support-A-Creator code through Epic Games.</div>\n              </div>\n            </div>`;
+        }
+      }catch(e){
+        resultEl.innerHTML = '<div class="notfound">Failed to connect to the API. Please try again.</div>';
+      }finally{
+        btn.disabled = false;
+      }
+    }
+
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, function (s) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s]; });
+    }
+
+    btn.addEventListener('click', checkCode);
+    input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') checkCode(); });
+  </script>
+</body>
 </html>
